@@ -102,6 +102,8 @@ main{padding-bottom:130px}
 <button id="thb" onclick="thm()" aria-label="Ganti mode terang atau malam">🌙</button><div class="hero">🎋🐷🐼🐧🌲</div>
 <h1>Petualangan Harianku</h1><div class="mu" style="text-align:center">Buku catatan dari hutan bambu & negeri salju ❄️🌿</div>
 <div class="c" style="margin-top:10px;text-align:center"><div class="mu" id="cs">☁️ Memuat...</div>
+<div id="cf" style="display:none;margin-top:8px"><textarea id="ci" placeholder="Tempel blok firebaseConfig dari Firebase di sini"></textarea><button onclick="saveCfg()" style="width:100%;margin-top:8px">Simpan & sambungkan</button></div>
+<button id="cr" class="g" onclick="resetCfg()" style="display:none">ganti konfigurasi</button>
 <button id="ca" onclick="cloudLogin()" style="display:none;width:100%;margin-top:8px">Masuk dengan Google</button>
 <div id="co" style="display:none;margin-top:6px"><span class="mu" id="cu"></span> <button class="g" onclick="cloudLogout()">Keluar</button></div></div>
 <div class="c" style="margin-top:10px"><div class="nav"><button onclick="mv(-1)">◀</button><b id="dt"></b><button onclick="mv(1)">▶</button></div>
@@ -254,11 +256,11 @@ ath();tab(0);draw();setInterval(function(){var k=ymd(cur);nowCard(tasks(k),k);ch
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import{getAuth,GoogleAuthProvider,signInWithPopup,signInWithRedirect,signOut,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import{getFirestore,doc,getDoc,setDoc,onSnapshot}from"https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
-// ====== ISI DENGAN firebaseConfig DARI PROJECT FIREBASE KAMU ======
-const cfg={apiKey:"ISI_API_KEY",authDomain:"ISI_PROJECT.firebaseapp.com",projectId:"ISI_PROJECT",appId:"ISI_APP_ID"};
-// ==================================================================
+let cfg=null;try{cfg=JSON.parse(localStorage.getItem("fbcfg")||"null")}catch(e){}
+window.saveCfg=()=>{const t=document.getElementById("ci").value,g=k=>(t.match(new RegExp(k+"[\"']?\\s*:\\s*[\"']([^\"']+)"))||[])[1],c={apiKey:g("apiKey"),authDomain:g("authDomain"),projectId:g("projectId"),appId:g("appId")};if(!c.apiKey||!c.projectId||!c.appId){alert("Konfigurasi belum lengkap. Salin seluruh blok firebaseConfig dari Firebase.");return}if(!c.authDomain)c.authDomain=c.projectId+".firebaseapp.com";localStorage.setItem("fbcfg",JSON.stringify(c));location.reload()};
+window.resetCfg=()=>{if(confirm("Hapus konfigurasi cloud di perangkat ini? (data tidak terhapus)")){localStorage.removeItem("fbcfg");location.reload()}};
 const el=i=>document.getElementById(i),st=m=>{el("cs").textContent=m};
-if(cfg.apiKey.startsWith("ISI")){st("Firebase belum diisi. Data hanya tersimpan di perangkat ini.")}else{
+if(!cfg){st("☁️ Belum tersambung ke cloud. Data hanya di perangkat ini.");el("cf").style.display=""}else{el("cr").style.display="";
 const app=initializeApp(cfg),auth=getAuth(app),db=getFirestore(app);let ref=null,timer,unsub;
 window.cloudLogin=async()=>{const p=new GoogleAuthProvider();try{await signInWithPopup(auth,p)}catch(e){if(e.code==="auth/popup-blocked"||e.code==="auth/operation-not-supported-in-this-environment")await signInWithRedirect(auth,p);else st("Gagal masuk: "+e.code)}};
 window.cloudLogout=()=>signOut(auth);
